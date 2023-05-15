@@ -61,3 +61,34 @@ def extract_song_title(url):
 
 
  
+def extract_lyrics_with_title(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    elements = soup.find_all(class_='Lyrics__Container-sc-1ynbvzw-5')
+
+    lyrics = ''
+    for element in elements:
+        # Estrai il testo dagli elementi "div"
+        for content in element.contents:
+            if content.name == 'br':
+                lyrics += ' '
+            elif content.name == 'i' or content.name == 'b' or content.name == 'a':
+                lyrics += content.get_text()
+            else:
+                if callable(getattr(content, 'strip', None)):
+                    lyrics += content.strip()
+ 
+    # Rimuovi i tag HTML
+    clean_lyrics = re.compile('<.*?>')
+    lyrics = re.sub(clean_lyrics, '', lyrics)
+
+    # Rimuovi il testo tra parentesi quadre []
+    lyrics = re.sub(r'\[.*?\]', '', lyrics)
+    
+     # Rimuovi "n2005"
+    lyrics = lyrics.replace('\u2005', '')
+
+    return lyrics.strip()
+
+testo = extract_lyrics_with_title("https://genius.com/Ghali-cara-italia-lyrics")
+print(testo)
